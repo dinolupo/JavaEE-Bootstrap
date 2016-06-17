@@ -13,7 +13,7 @@ public class Client {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		Configuration config = ConfigurationFactory.getInstance().create();
+		Configuration config = (Configuration) ConfigurationFactory.getInstance().create();
 	}
 
 }

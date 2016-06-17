@@ -26,7 +26,7 @@ public class ConfigurationFactoryTest {
 	 */
 	@Test
 	public void testCreate() {
-		Configuration product = cut.create();
+		Configuration product = (Configuration) cut.create();
 		assertNotNull(product);
 		
 		

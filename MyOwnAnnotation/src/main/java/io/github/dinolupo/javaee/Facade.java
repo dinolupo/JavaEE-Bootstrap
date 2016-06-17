@@ -10,9 +10,16 @@ package io.github.dinolupo.javaee;
 public class Facade {
 
 	@MyInject(MyInject.DayTime.EVENING)
-	Service service;
+	private Service service;
 
 	String somethingElse;
-	
+
+	@Override
+	public String toString() {
+		return "Facade{" +
+				"service=" + service +
+				", somethingElse='" + somethingElse + '\'' +
+				'}';
+	}
 }
 
