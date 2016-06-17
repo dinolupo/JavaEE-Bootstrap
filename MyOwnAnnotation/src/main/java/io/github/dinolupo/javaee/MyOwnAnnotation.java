@@ -27,7 +27,12 @@ public class MyOwnAnnotation {
 				System.out.printf("Field %s is annotated with %s\n", field, myInject);
 				Object facade = clazz.newInstance();
 				Class<?> serviceType = field.getType();
-				Object service = serviceType.newInstance();
+				// To Inject interfaces we simulate a Scanner and retrieve an Implementation with suffix "Impl"
+				String simpleName = serviceType.getSimpleName();
+				String className = simpleName + "Impl";
+				String packageName = serviceType.getPackage().getName();
+				String fullName = packageName + "." + className;
+				Object service = Class.forName(fullName).newInstance();
 				field.setAccessible(true); // even if the field is private, access it
 				field.set(facade, service);
 				System.out.printf("%s\n", facade);
