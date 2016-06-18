@@ -34,7 +34,14 @@ public class MyOwnAnnotation {
 				String fullName = packageName + "." + className;
 				Object service = Class.forName(fullName).newInstance();
 				field.setAccessible(true); // even if the field is private, access it
-				field.set(facade, service);
+
+				// now we inject the Proxy rather than the service itself
+				field.set(facade, Decorator.decorate(service));
+
+				// Now we call a method on the Facade to see what happens
+				Facade typedFacade = (Facade) facade;
+				typedFacade.invokeService();
+
 				System.out.printf("%s\n", facade);
 			} else {
 				//System.out.printf("Field %s is not annotated", field);
