@@ -112,3 +112,6 @@ Icon
 bintopbin/
 tmp Ttmph *.tde*.bamp*.swy *~.ns
 localsk
+/DIwithServer/nbproject/private/
+/DIwithServer/build/
+/DIwithServer/dist/
