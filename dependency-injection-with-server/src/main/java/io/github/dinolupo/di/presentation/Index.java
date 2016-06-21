@@ -14,14 +14,29 @@ public class Index {
     @Inject
     HelloWorldService helloWorldService;
 
+    @Inject
+    UserCounter userCounter;
+
+    @Inject
+    GlobalCounter globalCounter;
+
     @PostConstruct
     public void onInit() {
         System.out.println("Creating Index");
     }
 
     public String getMessage() {
-//        return helloWorldService.getClass().getName();
+        userCounter.increase();
+        globalCounter.increase();
         return helloWorldService.serve();
+    }
+
+    public int getUserCounter() {
+        return userCounter.getCounter();
+    }
+
+    public int getGlobalCounter() {
+        return globalCounter.getCounter();
     }
 
     @PreDestroy
