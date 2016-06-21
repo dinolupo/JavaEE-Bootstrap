@@ -222,5 +222,19 @@ Here we show that introducing a new `EmptyDelegate` class  as `@ApplicationScope
 
 See the `Index` class where we increase the counter with references to User and Global counters and we retrieve the counter value using the `EmptyDelegate` class.
 
+### video 21.@Inject or @EJB or @Resource?
+
+- `@Inject` is a simplified version of `@EJB`
+
+- `@Resource` can be used to inject everything that is installed in the Application Server, it means everything that is in the JNDI tree of the application server, that belongs to the environment of the component. Example use of injection are:
+	- Topics / JMS
+	- Queues / JMS
+	- Data Sources
+	- Entity Manager Factories
+	- etc. 	 
+
+Let's see an example in the `HelloWorldService` class injecting the `SessionContext` with `@Resource` that shows the `CallerPrincipal()` of the `SessionContext`.
+
+
 
 
