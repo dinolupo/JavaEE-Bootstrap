@@ -2,6 +2,7 @@ package io.github.dinolupo.di.presentation;
 
 import javax.enterprise.inject.Model;
 import javax.inject.Inject;
+import javax.interceptor.Interceptor;
 
 /**
  * Created by dino on 19/06/16.

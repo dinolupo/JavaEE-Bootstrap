@@ -31,6 +31,11 @@ fabric.properties
 *.iml
 modules.xml
 
+### Java ###
+
+classes/
+*.class
+
 ### Eclipse ###
 
 .metadata

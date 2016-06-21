@@ -1,4 +1,4 @@
-### Dependency Injection with server
+### 12. Dependency Injection with server
 
 This project shows how Dependency Injection works on Java EE server.
 
@@ -50,6 +50,33 @@ You can see the Injected property in the Index class:
 ```java
 @Inject
 HelloWorldService helloWorldService;
+```
+
+### 13. Introducing Aspects
+
+We want to intercept the call to the EJB in the method `Index.getMessage()` and even if this seems difficult because Index uses the direct references to `HelloWorldService` we do this with the following code:
+
+- Implement the aspect `MethodCallLogger` with only one method that return Object in the following way:
+
+```java
+public class MethodCallLogger {
+    @AroundInvoke
+    public Object log(InvocationContext invocationContext) throws Exception {
+        long start = System.nanoTime();
+        Method method = invocationContext.getMethod();
+        try {
+            invocationContext.proceed();
+        } finally {
+            System.out.printf("Method %s invoked in %d ns\n", method, System.nanoTime() - start);
+        }
+    }
+}
+```
+
+- Annotate the `HelloWorldService` EJB with 
+
+```java
+@Interceptors(MethodCallLogger.class)
 ```
 
 
