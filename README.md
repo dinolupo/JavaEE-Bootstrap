@@ -216,5 +216,11 @@ Global Counter: 80
 User Counter: 50
 ```
 
+### video 18.Mixing CDI Scopes
+
+Here we show that introducing a new `EmptyDelegate` class  as `@ApplicationScope` and referencing the counter beans from it with `@Inject`, the server is capable to inject the same counter instances in both `EmptyDelegate` and `Index` classes.
+
+See the `Index` class where we increase the counter with references to User and Global counters and we retrieve the counter value using the `EmptyDelegate` class.
+
 
 

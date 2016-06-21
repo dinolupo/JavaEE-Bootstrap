@@ -20,6 +20,9 @@ public class Index {
     @Inject
     GlobalCounter globalCounter;
 
+    @Inject
+    EmptyDelegate emptyDelegate;
+
     @PostConstruct
     public void onInit() {
         System.out.println("Creating Index");
@@ -32,11 +35,13 @@ public class Index {
     }
 
     public int getUserCounter() {
-        return userCounter.getCounter();
+//        return userCounter.getCounter();
+        return emptyDelegate.getUserCounter();
     }
 
     public int getGlobalCounter() {
-        return globalCounter.getCounter();
+//        return globalCounter.getCounter();
+        return emptyDelegate.getGlobalCounter();
     }
 
     @PreDestroy
