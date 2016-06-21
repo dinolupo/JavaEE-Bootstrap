@@ -9,7 +9,7 @@ import java.util.Date;
  * Created by dino on 19/06/16.
  */
 @Stateless
-@Interceptors(MethodCallLogger.class)
+//@Interceptors(MethodCallLogger.class)
 public class HelloWorldService {
 
     public String serve() {
