@@ -103,4 +103,23 @@ Stereotypes are like macros, here we create a new Stereotype names `Presenter` t
 
 Substituting the `@Model` annotation with the new one `@Presenter` all works as before, because the `@Presenter` stereotype is expanded in `@Named` and `@RequestScope`
 
+### 16.CDI vs. EJB Lifecycle
+
+We show here that `@RequestScope` annotation make the EJB to survive only one request. We show this introducing lifecyle methods like `@PostConstruct onInit()` and `@PreDestroy onDestroy()` into the Index and HelloWorldService class.
+
+The output is similar to the following:
+
+```
+15:43:55,962 INFO  [stdout] (default task-51) Creating Index
+15:43:55,964 INFO  [stdout] (default task-51) Creating EJB HelloWorldService
+15:43:55,965 INFO  [stdout] (default task-51) Method public java.lang.String io.github.dinolupo.di.presentation.HelloWorldService.serve() invoked in 257268 ns
+15:43:55,965 INFO  [stdout] (default task-51) Destroying Index
+15:44:01,795 INFO  [stdout] (default task-52) Creating Index
+15:44:01,796 INFO  [stdout] (default task-52) Method public java.lang.String io.github.dinolupo.di.presentation.HelloWorldService.serve() invoked in 58229 ns
+15:44:01,796 INFO  [stdout] (default task-52) Destroying Index
+```
+
+showing that __Index__ is created and destroyed while the __EJB__ is created and never destroyed.
+
+
 
