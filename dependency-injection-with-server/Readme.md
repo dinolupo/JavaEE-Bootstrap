@@ -97,4 +97,10 @@ Output is something like:
 io.github.dinolupo.di.presentation.HelloWorldService$Proxy$_$$_Weld$EnterpriseProxy$
 ```
 
+### 15.Stereotypes -- The Better Macros
+
+Stereotypes are like macros, here we create a new Stereotype names `Presenter` that behaves like the `@Model` annotation.
+
+Substituting the `@Model` annotation with the new one `@Presenter` all works as before, because the `@Presenter` stereotype is expanded in `@Named` and `@RequestScope`
+
 

@@ -6,15 +6,15 @@ import javax.inject.Inject;
 /**
  * Created by dino on 19/06/16.
  */
-@Model
+@Presenter
 public class Index {
 
     @Inject
     HelloWorldService helloWorldService;
 
     public String getMessage() {
-        return helloWorldService.getClass().getName();
-//        return helloWorldService.serve();
+//        return helloWorldService.getClass().getName();
+        return helloWorldService.serve();
     }
 
 }
