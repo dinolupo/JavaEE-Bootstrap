@@ -23,6 +23,12 @@ public class Index {
     @Inject
     EmptyDelegate emptyDelegate;
 
+    @Inject
+    BigBrother bigBrother;
+
+    @Inject
+    BigBrotherNotEJB bigBrotherNotEJB;
+
     @PostConstruct
     public void onInit() {
         System.out.println("Creating Index");
@@ -31,7 +37,10 @@ public class Index {
     public String getMessage() {
         userCounter.increase();
         globalCounter.increase();
-        return helloWorldService.serve();
+        String message = helloWorldService.serve();
+        bigBrother.gatherEverything(message);
+        bigBrotherNotEJB.gatherEverything(message);
+        return message;
     }
 
     public int getUserCounter() {

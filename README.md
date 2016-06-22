@@ -16,7 +16,7 @@ This little project shows a basic Annotation example
 
 ## Project Folder `DependencyInjection`
 
-### videos 06-07 Interface Injection, Dependency Injecion and Inversion of Control
+### videos 06-07 Interface Injection, Dependency Injection and Inversion of Control
 
 to simulate the behaviour of an application server, we have to inject Interfaces and not Classes, so to demonstrate this we change the Service class to an Interface and create an implementation called ServiceImpl (this is not a nice name because it doesn't say anything about the responsibility of the class, a better name would be ServiceConfiguration or something like that). Then in the main we add lines of code to retrieve the implementation (there is only one here called ServiceImpl) and inject to the Facade.
 
@@ -329,7 +329,59 @@ The `@Singleton` introduces a bottleneck because the application server locks th
 __pay attention__ that with `@ConcurrencyManagement` annotation, many threads can access the singleton simultaneously and you have to care by yourself about the consistency, using lock free data structures or lock resources by yourself.
 
 
+### video 23.Fire and Forget with CDI
 
+In Java EE 6 there is a nice way to do Aynchronous programming, we show how to do that with an example. Let's suppose we want to gather data in all classes all around our application server, let's create a BigBrother class with a method that is rather slow, for example it writes information on a database. To simlulate the slowness here, we stop the thread for 1 second (__only for demo purpose__)
+
+```java
+@Stateless
+public class BigBrother {
+
+    @Asynchronous
+    public void gatherEverything(String message){
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.printf("Save it for later: %s\n", message);
+    }
+
+}
+```
+
+We can use the `@Asynchronous` annotation on a method, but this annotation works only on EJBs, so we have to put also `@Stateless` or other EJB flavors.
+
+To work with no-EJB classes, we use the following approach:
+
+```java
+import javax.annotation.Resource;
+import javax.enterprise.concurrent.ManagedExecutorService;
+
+public class BigBrotherNotEJB {
+
+    @Resource
+    ManagedExecutorService managedExecutorService;
+
+    public void gatherEverything(String message){
+
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.printf("Not EJB long operation --> Save it for later: %s\n", message);
+            }
+        };
+
+        managedExecutorService.execute(runnable);
+
+    }
+} 
+```
 
 
 
