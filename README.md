@@ -226,7 +226,8 @@ See the `Index` class where we increase the counter with references to User and 
 
 - `@Inject` is a simplified version of `@EJB`
 
-- `@Resource` can be used to inject everything that is installed in the Application Server, it means everything that is in the JNDI tree of the application server, that belongs to the environment of the component. Example use of injection are:
+- `@Resource` can be used to inject everything that is installed in the Application Server, it means everything that is in the JNDI tree of the application server, that belongs to the environment of the component. Example uses of injection via the `@Resource` tag are the following:
+
 	- Topics / JMS
 	- Queues / JMS
 	- Data Sources
@@ -234,6 +235,100 @@ See the `Index` class where we increase the counter with references to User and 
 	- etc. 	 
 
 Let's see an example in the `HelloWorldService` class injecting the `SessionContext` with `@Resource` that shows the `CallerPrincipal()` of the `SessionContext`.
+
+### video 22.Different EJB Flavors
+
+- `@Stateless` there is no association between the EJB instance and the invoker (the caller)
+
+- `@Stateful` the invoker would get a dedicated instance of the EJB. In our case there would be one EJB for every Index class, see the console output below where the EJB is created and destroyed on each request:
+
+```
+INFO  [stdout] (default task-4) Creating EJB HelloWorldService
+INFO  [stdout] (default task-4) Creating Index
+INFO  [stdout] (default task-4) Method public java.lang.String io.github.dinolupo.di.presentation.HelloWorldService.serve() invoked in 104421 ns
+INFO  [stdout] (default task-4) Destroying Index
+INFO  [stdout] (default task-4) Destroying EJB HelloWorldService
+```
+
+To retain the EJB until the Session ends, we must add `@SessionScoped` annotations together with `@Stateful`:
+
+```java
+@SessionScoped
+@Stateful
+@Interceptors(MethodCallLogger.class)
+public class HelloWorldService implements Serializable {
+. . .
+}
+```
+
+- `@Singleton` Introduce and application wide cache, and together with `@Startup` it starts at deploy time or in startup time of application server, example: 
+
+```java
+@Startup
+@Singleton
+@Interceptors(MethodCallLogger.class)
+public class HelloWorldService {
+
+    @Resource
+    SessionContext sessionContext;
+
+    @PostConstruct
+    public void onInit() {
+        System.out.println("Starting... EJB HelloWorldService");
+    }
+
+    public String serve() {
+        return "Hi there! today is " + new Date() + " Caller Principal is " + sessionContext.getCallerPrincipal();
+    }
+
+    @PreDestroy
+    public void onDestroy() {
+        System.out.println("Destroying EJB HelloWorldService");
+    }
+
+}
+```
+
+Generates the following output, see the "Starting... EJB HelloWorldService" line, showing that the newly deployed EJB is instanciated before other components, and this happens on every change of the EJB:
+
+```
+11:35:34,166 INFO  [org.jboss.weld.deployer] (MSC service thread 1-2) WFLYWELD0006: Starting Services for CDI deployment: dependency-injection-with-server.war
+11:35:34,170 INFO  [org.jboss.weld.deployer] (MSC service thread 1-8) WFLYWELD0009: Starting weld service for deployment dependency-injection-with-server.war
+11:35:34,392 INFO  [stdout] (ServerService Thread Pool -- 64) Starting... EJB HelloWorldService
+11:35:34,419 INFO  [javax.enterprise.resource.webcontainer.jsf.config] (ServerService Thread Pool -- 64) Initializing Mojarra 2.2.12-jbossorg-2 20150729-1131 for context '/dependency-injection-with-server'
+11:35:34,558 INFO  [org.wildfly.extension.undertow] (ServerService Thread Pool -- 64) WFLYUT0021: Registered web context: /dependency-injection-with-server
+11:35:34,569 INFO  [org.jboss.as.server] (management-handler-thread - 7) WFLYSRV0010: Deployed "dependency-injection-with-server" (runtime-name : "dependency-injection-with-server.war")
+```
+
+This can be useful because in `@PostConstruct` you can:
+
+- Prefill the cache
+- Parse configuration
+- Prepare some stuff...
+
+and it is guaranteed by the application server that after completion of the `@PostConstruct` all other components are going to be started.
+
+- `@Singleton` Dependencies:
+
+Now we want to create two Singletons and assure that one of them starts before the other. Let's create another class `FireStarter`, to ensure that `@HelloWorldService` starts after that, we add the `@DependsOn` annotation like in the following code:
+
+```java
+@DependsOn("FireStarter")
+@Startup
+@Singleton
+@Interceptors(MethodCallLogger.class)
+public class HelloWorldService {
+. . .
+}
+```
+
+- Singleton bottleneck
+
+The `@Singleton` introduces a bottleneck because the application server locks the instance such as only one thread at a time can access to it. To solve this, add the the annotation `@ConcurrencyManagement(ConcurrencyManagementType.BEAN` 
+
+__pay attention__ that with `@ConcurrencyManagement` annotation, many threads can access the singleton simultaneously and you have to care by yourself about the consistency, using lock free data structures or lock resources by yourself.
+
+
 
 
 
