@@ -383,5 +383,27 @@ public class BigBrotherNotEJB {
 } 
 ```
 
+### 24.Hardcoded Timers
+
+With the class `BigBrotherNoEJB` we are gathering now all the information asynchronously using the application server interal Thread Pool. We used Thread sleep as a place holder for the expensive operation. We are going to show how to cache the messages and process them in batch.
+
+We create a new class `BigBrotherWithQueue` that is a `@Singleton` and store all the messages in a queue. Then we are going to process the message every 5 seconds in a method like the following:
+
+```java
+    @Schedule(second = "*/5", minute = "*", hour = "*")
+    public void batchAnalyze(){
+        System.out.printf("Analyzing at %s\n", new Date());
+    }
+```
+
+The output will be like:
+
+```
+08:03:40,015 INFO  [stdout] (EJB default - 3) Analyzing at Thu Jun 23 08:03:40 CEST 2016
+08:03:45,006 INFO  [stdout] (EJB default - 4) Analyzing at Thu Jun 23 08:03:45 CEST 2016
+08:03:50,006 INFO  [stdout] (EJB default - 5) Analyzing at Thu Jun 23 08:03:50 CEST 2016
+```
+
+Then we use a `CopyOnWriteArrayList` concurrent data structure as a queue to store messages, and in batch method we work every item in the structure.
 
 

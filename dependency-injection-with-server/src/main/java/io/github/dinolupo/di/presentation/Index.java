@@ -23,11 +23,14 @@ public class Index {
     @Inject
     EmptyDelegate emptyDelegate;
 
-    @Inject
-    BigBrother bigBrother;
+    //@Inject
+    //BigBrother bigBrother;
+
+    //@Inject
+    //BigBrotherNotEJB bigBrother;
 
     @Inject
-    BigBrotherNotEJB bigBrotherNotEJB;
+    BigBrotherWithQueue bigBrother;
 
     @PostConstruct
     public void onInit() {
@@ -39,7 +42,6 @@ public class Index {
         globalCounter.increase();
         String message = helloWorldService.serve();
         bigBrother.gatherEverything(message);
-        bigBrotherNotEJB.gatherEverything(message);
         return message;
     }
 
