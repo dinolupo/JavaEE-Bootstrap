@@ -406,4 +406,42 @@ The output will be like:
 
 Then we use a `CopyOnWriteArrayList` concurrent data structure as a queue to store messages, and in batch method we work every item in the structure.
 
+### 25.Configurable Timers (@Schedule) 
+
+You can use Configurable Timers using the `TimerService` of the JEE Application Server. In the following class we create a `ScheduleExpression` that could take the configuration parameters from an external configuration file (properties):
+
+```java
+@Startup
+@ConcurrencyManagement(ConcurrencyManagementType.BEAN)
+@Singleton
+public class BigBrotherWithQueueUsingTimer {
+
+    CopyOnWriteArrayList<String> messageQueue;
+
+    @Resource
+    TimerService timerService;
+
+    @PostConstruct
+    public void initialize(){
+        this.messageQueue = new CopyOnWriteArrayList<>();
+        ScheduleExpression scheduleExpression = new ScheduleExpression();
+        scheduleExpression.second("*/3").minute("*").hour("*");
+        Timer calendarTimer = this.timerService.createCalendarTimer(scheduleExpression);
+    }
+
+    public void gatherEverything(String message){
+        messageQueue.add(message);
+    }
+
+    @Timeout
+    public void batchAnalyze(){
+        System.out.printf("**************** Analyzing at %s ***************\n", new Date());
+        for (String message: messageQueue) {
+            System.out.printf("---- Working on message: %s\n", message);
+            messageQueue.remove(message);
+        }
+    }
+
+}
+```
 

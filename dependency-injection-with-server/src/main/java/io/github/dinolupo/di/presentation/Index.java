@@ -29,8 +29,11 @@ public class Index {
     //@Inject
     //BigBrotherNotEJB bigBrother;
 
+    //@Inject
+    //BigBrotherWithQueue bigBrother;
+
     @Inject
-    BigBrotherWithQueue bigBrother;
+    BigBrotherWithQueueUsingTimer bigBrother;
 
     @PostConstruct
     public void onInit() {
