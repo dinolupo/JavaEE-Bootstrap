@@ -33,7 +33,7 @@ public class Index {
     //BigBrotherWithQueue bigBrother;
 
     @Inject
-    BigBrotherWithQueueUsingTimer bigBrother;
+    BigBrotherWithQueueUsingTimerAndMessageAnalyzer bigBrother;
 
     @PostConstruct
     public void onInit() {

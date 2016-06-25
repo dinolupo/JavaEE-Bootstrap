@@ -420,13 +420,14 @@ public class BigBrotherWithQueueUsingTimer {
 
     @Resource
     TimerService timerService;
+	 Timer timer;
 
     @PostConstruct
     public void initialize(){
         this.messageQueue = new CopyOnWriteArrayList<>();
         ScheduleExpression scheduleExpression = new ScheduleExpression();
         scheduleExpression.second("*/3").minute("*").hour("*");
-        Timer calendarTimer = this.timerService.createCalendarTimer(scheduleExpression);
+        this.timer = timerService.createCalendarTimer(scheduleExpression);
     }
 
     public void gatherEverything(String message){
@@ -440,6 +441,126 @@ public class BigBrotherWithQueueUsingTimer {
             System.out.printf("---- Working on message: %s\n", message);
             messageQueue.remove(message);
         }
+    }
+
+}
+```
+
+### 26.Asynchronous Behavior and Futures
+
+The BigBrother now processes the messages every n seconds, but what could happen is that the `batchAnalyze()` method could take a long time to process a long list of messages, because it works serially on every message. We can parallelize it using an Asynchronous EJB like the following:
+
+```java 
+package io.github.dinolupo.di.presentation;
+
+import javax.ejb.AsyncResult;
+import javax.ejb.Asynchronous;
+import javax.ejb.Stateless;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
+/**
+ * Created by dinolupo.github.io on 23/06/16.
+ */
+@Stateless
+public class MessageAnalyzer {
+
+    @Asynchronous
+    public Future<Boolean> analyze(String message) {
+        Boolean retValue = message.hashCode() % 2 == 0;
+        // with sleep() here we are going to simulate a long process required to analyze the message
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return new AsyncResult<>(retValue);
+    }
+
+    @Asynchronous
+    public void showResults(List<Future<Boolean>> results){
+        for (Future<Boolean> result: results) {
+            try {
+                System.out.printf("### Result is %s\n", result.get());
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
+}
+
+```
+
+It has two methods:
+
+- `analyze` that analyze the message data (in our example it stops the thread for 10 seconds to simulate an heavy processing and then it returns if the hashCode is multiple of 2)
+
+- `showResults` that shows the Future results in Asynchronous way
+
+they are executed asynchronously when they are called by the `batchAnalyze` method:
+ 
+
+```java
+@Startup
+@ConcurrencyManagement(ConcurrencyManagementType.BEAN)
+@Singleton
+public class BigBrotherWithQueueUsingTimerAndMessageAnalyzer {
+
+    CopyOnWriteArrayList<String> messageQueue;
+
+    @Inject
+    MessageAnalyzer messageAnalyzer;
+
+    @Resource
+    TimerService timerService;
+    Timer timer;
+
+    @PostConstruct
+    public void initialize(){
+        this.messageQueue = new CopyOnWriteArrayList<>();
+        ScheduleExpression scheduleExpression = new ScheduleExpression();
+        scheduleExpression.second("*/1").minute("*").hour("*");
+        for (Timer timer1 : timerService.getAllTimers()) {
+            System.out.println(">>>>>> Timer: " + timer1);
+        }
+        this.timer = timerService.createCalendarTimer(scheduleExpression);
+    }
+
+
+    public void gatherEverything(String message){
+        messageQueue.add(message);
+    }
+
+    @Timeout
+    public void batchAnalyze(){
+        System.out.printf("**************** Analyzing at %s ***************\n", new Date());
+        // collector of results from the analyzer
+        List<Future<Boolean>> results = new ArrayList<>();
+        for (String message: messageQueue) {
+
+            // Asynchronous call to analyze the message
+            results.add(messageAnalyzer.analyze(message));
+
+            messageQueue.remove(message);
+        }
+
+        // show the results asynchronously
+        messageAnalyzer.showResults(results);
+    }
+
+    // --------------------------------------------------------
+    //  the following method is very important because without
+    //  it the Timer will never be destroyed and on following
+    //  redeployments you will obtain multiple timers
+    // --------------------------------------------------------
+
+    @PreDestroy
+    void preDestroy() {
+        System.err.println("****** DESTROYING TIMER ******");
+        timer.cancel();
+        timer = null;
     }
 
 }
