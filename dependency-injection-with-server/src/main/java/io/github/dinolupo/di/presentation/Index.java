@@ -32,8 +32,11 @@ public class Index {
     //@Inject
     //BigBrotherWithQueue bigBrother;
 
+    //@Inject
+    //BigBrotherWithQueueUsingTimerAndMessageAnalyzer bigBrother;
+
     @Inject
-    BigBrotherWithQueueUsingTimerAndMessageAnalyzer bigBrother;
+    BigBrotherJPA bigBrother;
 
     @PostConstruct
     public void onInit() {
@@ -49,12 +52,10 @@ public class Index {
     }
 
     public int getUserCounter() {
-//        return userCounter.getCounter();
         return emptyDelegate.getUserCounter();
     }
 
     public int getGlobalCounter() {
-//        return globalCounter.getCounter();
         return emptyDelegate.getGlobalCounter();
     }
 

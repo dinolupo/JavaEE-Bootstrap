@@ -566,3 +566,114 @@ public class BigBrotherWithQueueUsingTimerAndMessageAnalyzer {
 }
 ```
 
+### 27.Persistence with JPA
+
+In this step we are going to store the messages with JPA.
+
+#### Add Postgresql drivers to Wildfly 10
+
+1) Get the JDBC driver from [http://jdbc.postgresql.org]():
+
+```sh
+wget –tries=0 –continue https://jdbc.postgresql.org/download/postgresql-9.4.1207.jar
+```
+
+1.a) If the driver does not contain the file `META-INF/services/java.sql.Driver`, Deploy the Jar using procedure at [https://docs.jboss.org/author/display/WFLY10/DataSource+configuration]()
+
+```sh
+mkdir -p META-INF/services
+echo "org.postgresql.Driver" > META-INF/services/java.sql.Driver
+jar \-uf jdbc-driver.jar META-INF/services/java.sql.Driver
+```
+
+2) Load the jboss cli and deploy the jar from the command line:
+
+```sh
+<WILDFLY_DIR>/bin/jboss-cli.sh
+[standalone@localhost:9990 /] deploy path/to/driver.jar
+```
+
+3) Configure the connection with jboss console
+
+-	load the console at [http://localhost:9990/console]()
+- 	Go to Configuration->Subsystems->Datasources->Non-XA->Add
+-  choose a JNDI name, example: `java:jboss/datasources/PostgresDataSource`
+-  select the jdbc string, example: `jdbc:postgresql://localhost:15432/database?ApplicationName=JavaEE_Bootstrap`
+
+4) create a `META-INF/persistence.xml` file into the project, referencing the JNDI connection name created before:
+
+> `META-INF/persistence.xml`
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence" version="2.1">
+    <persistence-unit name="production" transaction-type="JTA">
+        <jta-data-source>java:jboss/datasources/PostgresDataSource</jta-data-source>
+        <properties>
+            <property name="javax.persistence.schema-generation.database.action" value="drop-and-create"/>
+        </properties>
+    </persistence-unit>
+</persistence>
+```
+
+5) create a `Message` entity bean to store the message:
+
+> Message.java
+
+```java
+@Entity
+public class Message {
+
+    // id
+    @Id
+    @GeneratedValue
+    long id;
+
+    // payload
+    String message;
+
+    // needed for our purpose
+    public Message(String message) {
+        this.message = message;
+    }
+
+    // needed by JPA
+    public Message() {
+    }
+
+}
+```
+
+6) create a `MessageArchive` class that is needed to store our messages
+
+```java
+public class MessageArchive {
+
+    @PersistenceContext(unitName = "production")
+    EntityManager entityManager;
+
+    public void saveMessage(String message){
+        entityManager.merge(new Message(message));
+    }
+}
+```
+
+7) Inject the `MessageArchive` into the `BigBrotherJPA` class (we copied and commented out the previous for history purpose) and add the call to save the message:
+
+```java
+    public class BigBrotherWithQueueUsingTimerAndMessageAnalyzer {
+    	
+    	...
+    	
+    	@Inject
+    	MessageArchive messageArchiver;
+    
+    	public void gatherEverything(String message){
+      	  messageArchiver.saveMessage(message);
+      	  messageQueue.add(message);
+    	}
+    	
+    	...
+    	
+    }
+```
