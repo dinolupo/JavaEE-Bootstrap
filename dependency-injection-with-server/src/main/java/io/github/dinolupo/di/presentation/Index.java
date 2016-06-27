@@ -23,6 +23,9 @@ public class Index {
     @Inject
     EmptyDelegate emptyDelegate;
 
+    // JSF text field
+    private String textField;
+
     //@Inject
     //BigBrother bigBrother;
 
@@ -47,7 +50,7 @@ public class Index {
         userCounter.increase();
         globalCounter.increase();
         String message = helloWorldService.serve();
-        bigBrother.gatherEverything(message);
+        //bigBrother.gatherEverything(message);
         return message;
     }
 
@@ -62,6 +65,19 @@ public class Index {
     @PreDestroy
     public void onDestroy() {
         System.out.println("Destroying Index");
+    }
+
+    public String getTextField() {
+        return textField;
+    }
+
+    public void setTextField(String textField) {
+        this.textField = textField;
+    }
+
+    public Object save() {
+        this.bigBrother.gatherEverything(textField);
+        return null;
     }
 
 }

@@ -9,5 +9,11 @@
     #{index.message} <br/>
     Global Counter: #{index.globalCounter} <br/>
     User Counter: #{index.userCounter} <br/>
+
+    <h:form>
+        <h:inputText value="#{index.textField}"/><br/>
+        <h:commandButton value="Save" action="#{index.save}"/>
+    </h:form>
+
 </h:body>
 </html>

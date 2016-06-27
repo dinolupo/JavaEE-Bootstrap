@@ -768,5 +768,43 @@ public class MessageListener {
     }
 ```
 
+### 30.JSF Intro
 
+In this section we are going to enhance the JSF page with some components.
+
+- We add a `text` field with setter and getter into the `Index` managed bean:
+
+> `textField` declaration and setter/getter for JSF
+
+```java
+    private String textField;
+    
+        public String getTextField() {
+        return textField;
+    }
+
+    public void setTextField(String textField) {
+        this.textField = textField;
+    }
+``` 
+
+- add a `save` method that will be triggered by a button:
+
+> `save()` returns null because we want to stay in the same page, otherwise if you want to go so some other pages, you return a String with the name of the JSF page.
+
+```java
+    public Object save() {
+        this.bigBrother.gatherEverything(textField);
+        return null;
+    }
+```
+
+- add the following section in the `index.xhtml` JSF page:
+
+```xml
+    <h:form>
+        <h:inputText value="#{index.textField}"/><br/>
+        <h:commandButton value="Save" action="#{index.save}"/>
+    </h:form>
+```
 
