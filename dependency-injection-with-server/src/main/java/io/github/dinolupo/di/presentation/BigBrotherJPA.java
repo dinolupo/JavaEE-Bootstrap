@@ -4,6 +4,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.ejb.*;
+import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Date;
@@ -31,6 +32,12 @@ public class BigBrotherJPA {
     TimerService timerService;
     Timer timer;
 
+    @Inject
+    Event<String> event;
+
+    @Resource
+    SessionContext sessionContext;
+
     @PostConstruct
     public void initialize(){
         this.messageQueue = new CopyOnWriteArrayList<>();
@@ -46,6 +53,10 @@ public class BigBrotherJPA {
     public void gatherEverything(String message){
         messageArchiver.saveMessage(message);
         messageQueue.add(message);
+        event.fire(message);
+
+        //sessionContext.setRollbackOnly();
+
     }
 
     @Timeout

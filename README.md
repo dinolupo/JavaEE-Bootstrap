@@ -677,3 +677,96 @@ public class MessageArchive {
     	
     }
 ```
+
+### 29.JTA Transactions From The Code Perspective
+
+Every EJB method starts a transaction that ends at the end of the method call.
+
+Every request on the EJB applies JTA, it means that the Thread is marked as transactional, and this is forwarded on every other injected EJB, Beans or class used by that method. What happens behind the scenes is that when the Transaction hits the EntityManager (or other transactional resource as JMS, JCA, CDI Events, etc.) then it adds a little and necessary overhead to manage the transaction.
+
+In our example project, the first method that begin a transaction is the `BigBrotherJPA.gatherEverything()` because it is an EJB (Singleton) and transaction are applied only on EJBs. 
+
+As we seen before, the application server applies a Transaction Proxy before calling that method; it acts like the following:
+
+> transactionProxy acts like a decorator on EJB methods, starting and ending the transaction
+
+```java
+	// -------------
+	// txProxy.begin
+	// -------------
+    public void gatherEverything(String message){
+        messageArchiver.saveMessage(message);
+        messageQueue.add(message);
+    }
+    // --------------
+    // txProxy.commit
+    // --------------
+```
+
+If there is a runtime exception the transaction will be rolled back.
+
+- The messageQueue in the method is just a collection and it is not transactional.
+- The saveMessage call is interesting because the class `MessageArchive` is a POJO that does not have transactions (only EJBs have) but it has a `TransactionManager` injected and transaction will be used because it is associated with the Thread that originated the call to that method (in the previous Singleton `BigBrotherJPA`).
+
+To show what happens, let's send a CDI Event (it's like JMS messages are in memory, it's the Observer pattern in JavaEE 6):
+
+- in The `BigBrotherJPA` classe declare the following:
+
+> String is the payload of the Event in our case, but it could be any type 
+
+```java
+    @Inject
+    Event<String> event;
+```
+
+- In the `gatherEverything()` method fire the Event:
+
+> event.fire(message)
+
+```java
+    public void gatherEverything(String message){
+        messageArchiver.saveMessage(message);
+        messageQueue.add(message);
+        event.fire(message);
+    }
+```
+
+- to observe events we declare another class `MessageListener`:
+
+> using the `@Observe` annotation we declare the type of Event to receive, so the Event is received because String is the same type of the Event declared before. We ca also declare when we want to receive it (`during`). 
+
+```java
+public class MessageListener {
+    
+    public void onSuccess(@Observes(during = TransactionPhase.AFTER_SUCCESS) String message){
+        System.out.println("+++++ Transaction commited");
+    }
+
+    public void onFailure(@Observes(during = TransactionPhase.AFTER_FAILURE) String message){
+        System.out.println("----- Transaction Failure");
+    }
+    
+}
+```
+
+- deploy to test for Commit (see the `+++++` in the log)
+
+- To test for rollback we can inject the `SessionContext` and rollback the transaction, we will see the `-----` in the log:
+
+```java
+    
+    @Resource
+    SessionContext sessionContext;
+    
+    public void gatherEverything(String message){
+        messageArchiver.saveMessage(message);
+        messageQueue.add(message);
+        event.fire(message);
+
+        sessionContext.setRollbackOnly();
+
+    }
+```
+
+
+
