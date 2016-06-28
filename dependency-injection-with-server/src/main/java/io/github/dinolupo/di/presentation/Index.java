@@ -4,6 +4,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.inject.Model;
 import javax.inject.Inject;
+import javax.validation.constraints.Size;
 
 /**
  * Created by dino on 19/06/16.
@@ -23,7 +24,8 @@ public class Index {
     @Inject
     EmptyDelegate emptyDelegate;
 
-    // JSF text field
+    // JSF text field, with validation
+    @Size(min = 3, max = 8)
     private String textField;
 
     //@Inject

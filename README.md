@@ -807,4 +807,31 @@ In this section we are going to enhance the JSF page with some components.
         <h:commandButton value="Save" action="#{index.save}"/>
     </h:form>
 ```
+### 31.Field Validation with Bean Validation
+
+We show how to validate a field:
+
+- In the `Index` Managed Bean, set the field validation with `@Size` annotation:
+
+> @Size annotation with min/max properties
+
+```java
+    @Size(min = 3, max = 8)
+    private String textField;
+``` 
+
+Bean Validation in Java EE 7 can be used also on EJBs, JAX-RS, JPA Entities (JEE 6/7). 
+It's a nice way also to document the fields, better than a javadoc comment.
+
+You can set the message with the `message` property:
+
+```java
+    @Size(min = 3, max = 8, message="Field is invalid, please retry.")
+    private String textField;
+``` 
+
+In case the Bean Validation is not satisfied, the Trasaction will be rolled back.
+
+
+
 
