@@ -832,6 +832,92 @@ You can set the message with the `message` property:
 
 In case the Bean Validation is not satisfied, the Trasaction will be rolled back.
 
+### 32.JAX-RS (REST) Intro
 
+We show how to create web services with JEE.
 
+1) First of all we have to initialize and start the JAX-RS runtime:
 
+> JAX-RS Runtime start
+
+```java
+import javax.ws.rs.ApplicationPath;
+import javax.ws.rs.core.Application;
+
+@ApplicationPath("resources")
+public class JAXRSConfiguration extends Application {
+}
+```
+
+2) Create a JAX-RS resource, to access the class via HTTP
+
+> JAX-RS class resource
+
+```java
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+
+@Path("message")
+public class MessagesResource {
+
+	@GET
+	public String message() {
+ 	   return "hello, world!";
+	}
+
+}
+``` 
+
+3) test the service with:
+
+```sh
+% curl http://localhost:8080/web_module_war_exploded/resources/messages
+```
+
+URL explanation: 
+
+- `web_module_war_exploded` is the Context URI of the URL
+- `resources` is the name of the JAX-RS application
+- `messages` is the name of the resource
+
+4) Of course we can return any type of bean, not only String, so let's change the `Message` bean definition adding support for serialization in both XML and JSON:
+
+> add JAXB annotation to `Message` class:
+
+```java
+@Entity
+@XmlRootElement
+@XmlAccessorType
+public class Message {...}
+``` 
+
+> change the type of the Rest Service to return a Message object:
+
+```java
+@Path("messages")
+public class MessagesResource {
+
+    @GET
+    public Message message() {
+        return new Message("Hello from a Message object");
+    }
+
+}
+```
+
+5) Test both XML and JSON return types:
+
+> XML
+
+```sh
+% curl -H "Accept: application/xml" http://localhost:8080/web_module_war_exploded/resources/messages
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<message><id>0</id><message>hello from a Message object</message></message>
+```
+
+> JSON
+
+```sh
+% curl -H "Accept: application/json" http://localhost:8080/web_module_war_exploded/resources/messages
+{"id":0,"message":"hello from a Message object"}
+```
