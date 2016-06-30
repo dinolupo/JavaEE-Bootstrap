@@ -921,3 +921,51 @@ public class MessagesResource {
 % curl -H "Accept: application/json" http://localhost:8080/web_module_war_exploded/resources/messages
 {"id":0,"message":"hello from a Message object"}
 ```
+
+### 33.JAX-RS and Content Negotiation
+
+Let's show how to use JSON directly, without any serialization derived from a JAXB annotated object, with a `JsonObject` class introduced in JEE 7: 
+
+> Use the package javax.json to find Json class utilities
+
+
+```java
+
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+
+@Path("messages")
+public class MessagesResource {
+
+    @GET
+    @Produces(MediaType.APPLICATION_XML)
+    public Message message() {
+        return new Message("hello from a Message object");
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public JsonObject getFruitCart() {
+        return Json.createObjectBuilder().add("bananas", 5).add("apples", 3).build();
+    }
+
+}
+```
+
+We used the `@Produces` annotation because we have two @GET method, so when we want XML we get the first method, with JSON we get the second one:
+
+```sh
+% curl -H "Accept: application/json" http://localhost:8080/web_module_war_exploded/resources/messages
+{"bananas":5,"apples":3}
+
+% curl -H "Accept: application/xml" http://localhost:8080/web_module_war_exploded/resources/messages
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<message><id>0</id><message>hello from a Message object</message></message>
+```
+
+This nice behaviour of JAX-RS that returns the right content based on the type requested by the client is called **Content Negotiation**.
+
