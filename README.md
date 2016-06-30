@@ -967,5 +967,49 @@ We used the `@Produces` annotation because we have two @GET method, so when we w
 <message><id>0</id><message>hello from a Message object</message></message>
 ```
 
-This nice behaviour of JAX-RS that returns the right content based on the type requested by the client is called **Content Negotiation**.
+This nice behaviour of JAX-RS, that returns the right content based on the type requested by the client, is called **Content Negotiation**.
+
+### 34.JAX-RS Post Back
+
+We show here how to send a Post messae to the Rest API, using a JSON body:
+
+> declare a `@POST` annotated method that consumes a JSON body message:
+
+```java
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    public void postMessages(Message message) {
+        System.out.println("Message: " + message);
+    }
+```
+
+Add a toString() method to the Message class:
+
+```java
+    @Override
+    public String toString() {
+        return "Message{" +
+                "id=" + id +
+                ", message='" + message + '\'' +
+                '}';
+    }
+```
+
+to test the method, do a rest call like the following:
+
+```sh
+curl -i -H "Content-type: application/json" -d "{\"id\": 2, \"message\":\"Rest Post call\"}" http://localhost:8080/web_module_war_exploded/resources/messages
+
+HTTP/1.1 204 No Content
+X-Powered-By: Undertow/1
+Server: WildFly/10
+Date: Thu, 30 Jun 2016 16:32:42 GMT
+
+```
+
+It will produce the `toString()` output in the server console log like the following:
+
+```
+18:29:33,093 INFO  [stdout] (default task-19) Message: Message{id=2, message='Rest Post call'}
+```
 

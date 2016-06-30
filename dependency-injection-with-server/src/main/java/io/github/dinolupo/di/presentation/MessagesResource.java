@@ -2,9 +2,7 @@ package io.github.dinolupo.di.presentation;
 
 import javax.json.Json;
 import javax.json.JsonObject;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 
 /**
@@ -23,6 +21,12 @@ public class MessagesResource {
     @Produces(MediaType.APPLICATION_JSON)
     public JsonObject getFruitCart() {
         return Json.createObjectBuilder().add("bananas", 5).add("apples", 3).build();
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    public void postMessages(Message message) {
+        System.out.println("Message: " + message);
     }
 
 
