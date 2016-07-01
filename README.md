@@ -911,6 +911,11 @@ public class MessagesResource {
 
 ```sh
 % curl -H "Accept: application/xml" http://localhost:8080/web_module_war_exploded/resources/messages
+```
+
+> shell output XML
+
+```xml
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <message><id>0</id><message>hello from a Message object</message></message>
 ```
@@ -919,6 +924,11 @@ public class MessagesResource {
 
 ```sh
 % curl -H "Accept: application/json" http://localhost:8080/web_module_war_exploded/resources/messages
+```
+
+> shell output JSON
+
+```json
 {"id":0,"message":"hello from a Message object"}
 ```
 
@@ -956,13 +966,27 @@ public class MessagesResource {
 }
 ```
 
-We used the `@Produces` annotation because we have two @GET method, so when we want XML we get the first method, with JSON we get the second one:
+We used the `@Produces` annotation because we have two @GET methods, so when we want XML the engine hits the first method, when we ask for JSON the engine hits the second one:
 
 ```sh
 % curl -H "Accept: application/json" http://localhost:8080/web_module_war_exploded/resources/messages
-{"bananas":5,"apples":3}
+```
 
+> shell output JSON
+
+```json
+{"bananas":5,"apples":3}
+```
+
+> XML
+
+```sh
 % curl -H "Accept: application/xml" http://localhost:8080/web_module_war_exploded/resources/messages
+```
+
+> shell output XML
+
+```xml
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <message><id>0</id><message>hello from a Message object</message></message>
 ```
@@ -1004,12 +1028,98 @@ HTTP/1.1 204 No Content
 X-Powered-By: Undertow/1
 Server: WildFly/10
 Date: Thu, 30 Jun 2016 16:32:42 GMT
-
 ```
 
 It will produce the `toString()` output in the server console log like the following:
 
+> Console output
+
 ```
 18:29:33,093 INFO  [stdout] (default task-19) Message: Message{id=2, message='Rest Post call'}
+```
+
+### 35.JAX-RS Templates
+
+We show here how to query for a specific `Message` and how to get a list of messages:
+
+- To get a single `Message` object, we would like to query with the `id` parameter, so let's change the method as follows:
+
+> add a `@Path()` annotation with an `id` variable, and use that variable as a parameter:
+
+```java
+    @GET
+    @Produces(MediaType.APPLICATION_XML)
+    @Path("{id}")
+    public Message message(@PathParam("id") long id) {
+        return new Message("Message Id: " + id);
+    }
+```
+
+Now we can ask for a specific `Message` using a Rest call as follows:
+
+> added 17 as the `id` at the end of the URI path
+
+```sh
+% curl -H "Accept: application/xml" http://localhost:8080/web_module_war_exploded/resources/messages/17
+```
+
+> shell output XML
+
+```xml
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<message><id>0</id><message>Message Id: 17</message></message>
+```
+
+- To get a list of message, let's create a method like:
+
+```java
+    @GET
+    @Produces(MediaType.APPLICATION_XML)
+    public List<Message> messages() {
+        List<Message> retList = new ArrayList<>();
+        retList.add(new Message("Star Wars"));
+        retList.add(new Message("Star Trek"));
+        return retList;
+    }
+```
+
+that produces the following output:
+
+> ask for all Messages
+
+```sh
+% curl -H "Accept: application/xml" http://localhost:8080/web_module_war_exploded/resources/messages
+```
+
+> shell output XML
+
+```xml
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<collection>
+<message><id>0</id><message>Star Wars</message>
+</message><message><id>0</id><message>Star Trek</message></message>
+</collection>
+```
+
+- Now we have the whole `Message` fields as output, but the `Id` property is only needed for JPA and we do not want it to be serialized in XML or JSON output. We can use a `@XmlTransient` property to tell the JAXB engine to avoid serialization of that field:
+
+> adding a `@XmlTransient` annotation on `Id` field in the `Message` class
+
+```java
+    @Id
+    @GeneratedValue
+    @XmlTransient
+    long id;
+```The output now is without the `Id` field:
+
+```sh
+% curl -H "Accept: application/xml" http://localhost:8080/web_module_war_exploded/resources/messages/17
+```
+
+> shell output XML
+
+```xml
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<message><message>Message Id: 17</message></message>%
 ```
 

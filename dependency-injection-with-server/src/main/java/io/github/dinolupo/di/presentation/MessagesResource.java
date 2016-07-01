@@ -4,6 +4,8 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by dinolupo.github.io on 29/06/16.
@@ -13,8 +15,18 @@ public class MessagesResource {
 
     @GET
     @Produces(MediaType.APPLICATION_XML)
-    public Message message() {
-        return new Message("hello from a Message object");
+    @Path("{id}")
+    public Message message(@PathParam("id") long id) {
+        return new Message("Message Id: " + id);
+    }
+
+    @GET
+    @Produces(MediaType.APPLICATION_XML)
+    public List<Message> messages() {
+        List<Message> retList = new ArrayList<>();
+        retList.add(new Message("Star Wars"));
+        retList.add(new Message("Star Trek"));
+        return retList;
     }
 
     @GET
