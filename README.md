@@ -1123,3 +1123,34 @@ that produces the following output:
 <message><message>Message Id: 17</message></message>%
 ```
 
+### 36.Bean Validation with JAX-RS
+
+As we seen before, we can put field validation on bean properties. Now we are going to show how can we use validation with JAX-RS:
+
+1) put validation on `Message.message` field:
+
+> limit `message` from 3 to 10 characters
+
+```java
+    @Size(min = 3, max = 10)
+    String message;
+``` 
+
+2) Tell the JAX-RS engine that the `Message` parameter has to be validated:
+
+> add `@Valid` annotation to `MessagesResource. postMessages()` parameter method
+
+```java
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    public void postMessages(@Valid Message message) {
+        System.out.println("Message: " + message);
+    }
+```
+
+3) test the condition with curl (or postman) and you will get:
+
+- `HTTP/1.1 400 Bad Request` for not satisfied condition
+
+- `HTTP/1.1 204 No Content` if everything is ok
+

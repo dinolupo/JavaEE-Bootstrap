@@ -2,6 +2,7 @@ package io.github.dinolupo.di.presentation;
 
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
@@ -37,7 +38,7 @@ public class MessagesResource {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public void postMessages(Message message) {
+    public void postMessages(@Valid Message message) {
         System.out.println("Message: " + message);
     }
 

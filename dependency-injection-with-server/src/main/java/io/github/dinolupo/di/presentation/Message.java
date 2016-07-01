@@ -3,6 +3,7 @@ package io.github.dinolupo.di.presentation;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -22,7 +23,7 @@ public class Message {
     @XmlTransient
     long id;
 
-    // payload
+    @Size(min = 3, max = 10)
     String message;
 
     // needed for our purpose
